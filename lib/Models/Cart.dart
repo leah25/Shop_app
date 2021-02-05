@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 class CartItem {
   final String id;
+
   final String title;
   final double price;
   final int quantity;
@@ -24,7 +25,7 @@ class CartData with ChangeNotifier {
     var total = 0.0;
     _items.forEach((key, cartItem) {
       total += cartItem.quantity * cartItem.price;
-      notifyListeners();
+      // notifyListeners();
     });
     return total;
   }
@@ -53,6 +54,35 @@ class CartData with ChangeNotifier {
               price: sneakerPrice,
               quantity: 1));
     }
+    notifyListeners();
+  }
+
+  void deleteItem(String sneakerId) {
+    _items.remove(sneakerId);
+    notifyListeners();
+  }
+
+  void deleteSingleItem(String sneakerId) {
+    if (!_items.containsKey(sneakerId)) {
+      return;
+    }
+    if (_items[sneakerId].quantity > 1) {
+      _items.update(sneakerId, (availableItem) {
+        return CartItem(
+          id: availableItem.id,
+          title: availableItem.title,
+          price: availableItem.price,
+          quantity: availableItem.quantity - 1,
+        );
+      });
+    } else {
+      _items.remove(sneakerId);
+    }
+    notifyListeners();
+  }
+
+  void clear() {
+    _items = {};
     notifyListeners();
   }
 }

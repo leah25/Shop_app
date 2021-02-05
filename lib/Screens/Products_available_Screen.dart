@@ -4,6 +4,7 @@ import 'package:flutter_shop_app/Models/Sneaker_Provider.dart';
 import 'package:flutter_shop_app/Screens/CartScreen.dart';
 import 'package:flutter_shop_app/Widgets/Badge.dart';
 import 'package:flutter_shop_app/Widgets/Sneaker.dart';
+import 'package:flutter_shop_app/Widgets/drawer.dart';
 import 'package:provider/provider.dart';
 
 //enum ItemValues { favourites, all }
@@ -11,12 +12,42 @@ import 'package:provider/provider.dart';
 // enums are representing integers in words
 
 class ProductsAvailable extends StatefulWidget {
+  static String id = 'Products';
   @override
   _ProductsAvailableState createState() => _ProductsAvailableState();
 }
 
 class _ProductsAvailableState extends State<ProductsAvailable> {
   bool isItemFav = false;
+  bool _init = true;
+  bool _isLoading = false;
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    // the .of context does not work in init state
+  }
+
+  @override
+  void didChangeDependencies() {
+    if (_init) {
+      setState(() {
+        _isLoading = true;
+      });
+      Provider.of<Product>(context).fetchProduct().then((_) {
+        setState(() {
+          _isLoading = false;
+        });
+      });
+    }
+    _init = false;
+    super.didChangeDependencies();
+  }
+
+  Future<void> refresh() async {
+    return await Provider.of<Product>(context, listen: false).fetchProduct(true);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -58,7 +89,10 @@ class _ProductsAvailableState extends State<ProductsAvailable> {
           ),
         ],
       ),
-      body: BuildGrid(isItemFav),
+      drawer: AppDrawer(),
+      body: _isLoading
+          ? Center(child: CircularProgressIndicator())
+          : RefreshIndicator(onRefresh: refresh, child: BuildGrid(isItemFav)),
     );
   }
 }
